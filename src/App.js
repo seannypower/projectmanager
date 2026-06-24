@@ -22,11 +22,11 @@ function newSubId() { return 'sub_' + (_nextSubId++); }
 
 // Write a task + its subtasks to Supabase (for existing tasks only)
 async function syncTask(task) {
-  const { error } = await supabase.from('tasks').upsert({
-    id: task.id, title: task.title, project: task.project,
+  const { error } = await supabase.from('tasks').update({
+    title: task.title, project: task.project,
     priority: task.priority, due: task.due, est: task.est,
     snooze: task.snooze, notes: task.notes,
-  });
+  }).eq('id', task.id);
   if (error) { console.error('syncTask:', error); return; }
 
   await supabase.from('subtasks').delete().eq('task_id', task.id);
