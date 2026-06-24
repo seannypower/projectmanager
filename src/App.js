@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import supabase from './supabase';
 import { TaskCard } from './TaskCard';
 import { DetailDrawer } from './DetailDrawer';
@@ -52,6 +52,9 @@ export default function App() {
   const [mode, setMode] = useState('view');
   const [draft, setDraft] = useState(null);
   const [draftIsNew, setDraftIsNew] = useState(false);
+  const [cardPrefs, setCardPrefs] = useState({ project: true, due: true, duration: true, progress: true, notes: true, snooze: true });
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const viewMenuRef = useRef(null);
 
   // Load tasks from Supabase on mount
   useEffect(() => {
@@ -77,6 +80,13 @@ export default function App() {
 
   // ---- derived ----
   const today = (() => { const d = new Date(); return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); })();
+
+  // Close view menu on outside click
+  useEffect(() => {
+    function handler(e) { if (viewMenuRef.current && !viewMenuRef.current.contains(e.target)) setViewMenuOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   const cmps = {
     due:      (a, b) => dueOrdOf(a.due) - dueOrdOf(b.due),
     duration: (a, b) => { const va = a.subs.length > 0 ? sumHours(a.subs) : (parseFloat(a.est)||999); const vb = b.subs.length > 0 ? sumHours(b.subs) : (parseFloat(b.est)||999); return va - vb; },
@@ -234,6 +244,38 @@ export default function App() {
               <option value="snooze">Most snoozed</option>
               <option value="project">Project</option>
             </select>
+            <div style={{ width: 1, height: 20, background: '#3a414c' }} />
+            {/* View menu */}
+            <div ref={viewMenuRef} style={{ position: 'relative' }}>
+              <button onClick={() => setViewMenuOpen(o => !o)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: `1px solid ${viewMenuOpen ? '#474e5b' : '#3a414c'}`, background: viewMenuOpen ? '#353b46' : 'transparent', color: viewMenuOpen ? '#edebe5' : '#868d99', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, fontWeight: 500, transition: 'all 0.12s' }}>
+                Cards
+              </button>
+              {viewMenuOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: '#2f343d', border: '1px solid #474e5b', borderRadius: 10, padding: '6px 4px', zIndex: 50, minWidth: 150, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                  {[
+                    { key: 'project',  label: 'Category' },
+                    { key: 'due',      label: 'Due date' },
+                    { key: 'duration', label: 'Duration' },
+                    { key: 'progress', label: 'Progress bar' },
+                    { key: 'notes',    label: 'Notes' },
+                    { key: 'snooze',   label: 'Snooze count' },
+                  ].map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => setCardPrefs(p => ({ ...p, [key]: !p[key] }))}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '7px 12px', background: 'transparent', border: 'none', cursor: 'pointer', borderRadius: 7, transition: 'background 0.1s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#383e49'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <span style={{ width: 16, height: 16, borderRadius: 4, border: `1.5px solid ${cardPrefs[key] ? '#6b7686' : '#474e5b'}`, background: cardPrefs[key] ? '#6b7686' : 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flex: 'none', transition: 'all 0.1s' }}>
+                        {cardPrefs[key] && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
+                      </span>
+                      <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: cardPrefs[key] ? '#edebe5' : '#6b7280' }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -248,7 +290,7 @@ export default function App() {
         {view === 'list' && visible.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 11, maxWidth: 560 }}>
             {sorted.map(t => (
-              <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} />
+              <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} cardPrefs={cardPrefs} />
             ))}
           </div>
         )}
@@ -264,7 +306,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                   {col.items.map(t => (
-                    <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} kanban />
+                    <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} kanban cardPrefs={cardPrefs} />
                   ))}
                 </div>
               </div>
