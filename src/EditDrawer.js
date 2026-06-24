@@ -30,12 +30,15 @@ function SubEditRow({ sub, onSetName, onSetDur, onSetNotes, onCyclePri, onToggle
         >
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: p.color }} />
         </button>
-        <input
-          value={sub.dur}
-          onChange={e => onSetDur(e.target.value)}
-          placeholder="2h"
-          style={{ width: 42, background: '#2b3038', border: '1px solid #474e5b', borderRadius: 6, color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, padding: '5px 6px', textAlign: 'center', flex: 'none', outline: 'none' }}
-        />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: '#2b3038', border: '1px solid #474e5b', borderRadius: 6, padding: '5px 6px', flex: 'none' }}>
+          <input
+            value={parseFloat(sub.dur) || ''}
+            onChange={e => onSetDur(e.target.value.replace(/[^0-9.]/g, ''))}
+            placeholder="2"
+            style={{ width: 20, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, textAlign: 'center', outline: 'none' }}
+          />
+          <span style={{ color: '#6b7280', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11 }}>hr</span>
+        </span>
         <button onClick={onRemove} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#868d99', fontSize: 16, lineHeight: 1, padding: '2px 4px', flex: 'none' }}>×</button>
       </div>
       <input
@@ -124,9 +127,12 @@ export function EditDrawer({ draft, isNew, onClose, onSave, onDelete, onSetDraft
           <div style={{ flex: 1 }}>
             <label style={labelStyle}>Duration</label>
             {hasSubs ? (
-              <div style={{ background: '#2b3038', border: '1px dashed #474e5b', borderRadius: 8, padding: '9px 11px', color: '#868d99', fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 }}>auto · {sum}h</div>
+              <div style={{ background: '#2b3038', border: '1px dashed #474e5b', borderRadius: 8, padding: '9px 11px', color: '#868d99', fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 }}>auto · {sum} hr</div>
             ) : (
-              <input value={draft.est} onChange={e => onSetDraft({ est: e.target.value })} placeholder="3h" style={inputStyle} />
+              <div style={{ display: 'flex', alignItems: 'center', background: '#383e49', border: '1px solid #474e5b', borderRadius: 8, padding: '9px 11px', gap: 6 }}>
+                <input value={parseFloat(draft.est) || ''} onChange={e => onSetDraft({ est: e.target.value.replace(/[^0-9.]/g, '') })} placeholder="3" style={{ flex: 1, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, outline: 'none' }} />
+                <span style={{ color: '#6b7280', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13 }}>hr</span>
+              </div>
             )}
           </div>
         </div>
@@ -156,7 +162,7 @@ export function EditDrawer({ draft, isNew, onClose, onSave, onDelete, onSetDraft
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
             <label style={{ ...labelStyle, marginBottom: 0 }}>Subtasks</label>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: '#777e8c' }}>{draft.subs.length} {draft.subs.length === 1 ? 'subtask' : 'subtasks'} · {sum}h</span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: '#777e8c' }}>{draft.subs.length} {draft.subs.length === 1 ? 'subtask' : 'subtasks'} · {sum} hr</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {draft.subs.map(s => (

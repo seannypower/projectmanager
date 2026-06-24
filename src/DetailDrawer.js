@@ -69,16 +69,21 @@ function SubRow({ sub, taskPriColor, isUserSort, draggingId, onToggle, onSetName
         />
 
         {editingDur ? (
-          <input
-            autoFocus
-            defaultValue={sub.dur}
-            onChange={e => onSetDur(e.target.value)}
-            onBlur={() => setEditingDur(false)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') setEditingDur(false); }}
-            style={{ width: 46, background: '#2b3038', border: '1px solid #5b6373', borderRadius: 6, color: '#fff', fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, fontWeight: 500, padding: '3px 8px', flex: 'none', outline: 'none', textAlign: 'center' }}
-          />
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: '#2b3038', border: '1px solid #5b6373', borderRadius: 6, padding: '3px 8px', flex: 'none' }}>
+            <input
+              autoFocus
+              defaultValue={parseFloat(sub.dur) || ''}
+              onChange={e => onSetDur(e.target.value.replace(/[^0-9.]/g, ''))}
+              onBlur={() => setEditingDur(false)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') setEditingDur(false); }}
+              style={{ width: 24, background: 'transparent', border: 'none', color: '#fff', fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, fontWeight: 500, outline: 'none', textAlign: 'center' }}
+            />
+            <span style={{ color: '#9aa1ad', fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5 }}>hr</span>
+          </span>
         ) : (
-          <span onClick={() => setEditingDur(true)} style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 8px', borderRadius: 6, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, fontWeight: 500, color: '#fff', background: DUR_BRICK, flex: 'none', cursor: 'text' }}>{sub.dur || '—'}</span>
+          <span onClick={() => setEditingDur(true)} style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 8px', borderRadius: 6, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, fontWeight: 500, color: '#fff', background: DUR_BRICK, flex: 'none', cursor: 'text' }}>
+            {parseFloat(sub.dur) ? parseFloat(sub.dur) + ' hr' : '—'}
+          </span>
         )}
       </div>
 
@@ -115,7 +120,7 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
   const ord = dueOrdOf(task.due);
   const dueState = dueStateOf(ord);
   const dueText = dueState === 'overdue' ? (task.due + ' · late') : (task.due || 'no date');
-  const durChip = total > 0 ? sumH + 'h' : task.est;
+  const durChip = total > 0 ? sumH + ' hr' : (parseFloat(task.est) ? parseFloat(task.est) + ' hr' : null);
   const subPct = total ? Math.round((done / total) * 100) : 0;
   const snoozeBg = task.snooze >= 3 ? 'oklch(0.60 0.14 68)' : 'oklch(0.50 0.008 255)';
 
@@ -167,7 +172,7 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
                   <option value="duration">Duration</option>
                   <option value="priority">Priority</option>
                 </select>
-                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: '#777e8c' }}>{done}/{total} · {sumH}h</span>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: '#777e8c' }}>{done}/{total} · {sumH} hr</span>
               </div>
             </div>
             <div style={{ height: 6, borderRadius: 4, background: '#20242b', overflow: 'hidden', marginBottom: 8 }}>

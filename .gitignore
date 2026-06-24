@@ -24,3 +24,4 @@ yarn-error.log*
 seed.mjs
 .vercel
 mcp-server/node_modules
+migrate-durations.mjs

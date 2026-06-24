@@ -9,7 +9,7 @@ export function TaskCard({ task, selected, snoozeOn, onClick, kanban, cardPrefs,
   const ord = dueOrdOf(task.due);
   const dueState = dueStateOf(ord);
   const dueText = dueState === 'overdue' ? (task.due + ' · late') : (task.due || 'no date');
-  const durChip = total > 0 ? sumH + 'h' : task.est;
+  const durChip = total > 0 ? sumH + ' hr' : (parseFloat(task.est) ? parseFloat(task.est) + ' hr' : null);
   const subPct = total ? Math.round((done / total) * 100) : 0;
   const showSnooze = snoozeOn && task.snooze > 0;
   const snoozeBg = task.snooze >= 3 ? 'oklch(0.60 0.14 68)' : 'oklch(0.50 0.008 255)';
