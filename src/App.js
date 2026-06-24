@@ -56,7 +56,7 @@ export default function App() {
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const viewMenuRef = useRef(null);
 
-  // Load tasks from Supabase on mount
+  // Load tasks from Supabase on mount + subscribe to realtime changes
   useEffect(() => {
     async function load() {
       const { data, error } = await supabase
@@ -75,7 +75,17 @@ export default function App() {
       setTasks(loaded);
       setLoading(false);
     }
+
     load();
+
+    // Re-fetch whenever any task or subtask changes on any device
+    const channel = supabase
+      .channel('db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'subtasks' }, load)
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
   }, []);
 
   // ---- derived ----
