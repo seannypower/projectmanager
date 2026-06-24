@@ -29,16 +29,24 @@ async function syncTask(task) {
   }).eq('id', task.id);
   if (error) { console.error('syncTask:', error); return; }
 
-  await supabase.from('subtasks').delete().eq('task_id', task.id);
+  // Upsert current subtasks (never deletes all at once — avoids Realtime flash)
   if (task.subs.length > 0) {
-    const { error: subErr } = await supabase.from('subtasks').insert(
+    const { error: upsertErr } = await supabase.from('subtasks').upsert(
       task.subs.map((s, i) => ({
         id: s.id, task_id: task.id, name: s.name, pri: s.pri,
         dur: s.dur, due: s.due, done: s.done, notes: s.notes, position: i,
       }))
     );
-    if (subErr) console.error('syncSubtasks:', subErr);
+    if (upsertErr) console.error('syncSubtasks upsert:', upsertErr);
   }
+
+  // Delete only subtasks that were removed
+  const keepIds = task.subs.map(s => s.id);
+  const deleteQuery = supabase.from('subtasks').delete().eq('task_id', task.id);
+  const { error: delErr } = await (keepIds.length > 0
+    ? deleteQuery.not('id', 'in', `(${keepIds.join(',')})`)
+    : deleteQuery);
+  if (delErr) console.error('syncSubtasks delete:', delErr);
 }
 
 export default function App() {
