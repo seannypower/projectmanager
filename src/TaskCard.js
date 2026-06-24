@@ -1,7 +1,7 @@
 import { Chip } from './Chip';
 import { PRI, PROJ_COLOR, DUE_COLOR, DUR_BRICK, dueOrdOf, dueStateOf, sumHours } from './data';
 
-export function TaskCard({ task, selected, snoozeOn, onClick, kanban, cardPrefs }) {
+export function TaskCard({ task, selected, snoozeOn, onClick, kanban, cardPrefs, onToggleDone }) {
   const p = PRI[task.priority] || PRI.ongoing;
   const total = task.subs.length;
   const done = task.subs.filter(s => s.done).length;
@@ -40,8 +40,12 @@ export function TaskCard({ task, selected, snoozeOn, onClick, kanban, cardPrefs 
           <div style={{ fontSize: 14.5, fontWeight: 500, color: '#edebe5', marginTop: 9, lineHeight: 1.3, letterSpacing: '-0.01em' }}>{task.title}</div>
         </>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 15.5, fontWeight: 500, color: '#edebe5', flex: 1, minWidth: 0, letterSpacing: '-0.01em' }}>{task.title}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span
+            onClick={e => { e.stopPropagation(); onToggleDone?.(); }}
+            style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${task.done ? p.color : '#5a616e'}`, background: task.done ? p.color : 'transparent', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, flex: 'none', cursor: 'pointer', transition: 'all 0.12s' }}
+          >{task.done ? '✓' : ''}</span>
+          <span style={{ fontSize: 15.5, fontWeight: 500, color: task.done ? '#868d99' : '#edebe5', flex: 1, minWidth: 0, letterSpacing: '-0.01em', textDecoration: task.done ? 'line-through' : 'none' }}>{task.title}</span>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: p.color, whiteSpace: 'nowrap' }}>{p.label}</span>
         </div>
       )}

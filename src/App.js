@@ -62,6 +62,7 @@ export default function App() {
   const [draftIsNew, setDraftIsNew] = useState(false);
   const [cardPrefs, setCardPrefs] = useState({ project: true, due: true, duration: true, progress: true, notes: true, snooze: true });
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [completedOpen, setCompletedOpen] = useState(false);
   const viewMenuRef = useRef(null);
 
   // Load tasks from Supabase on mount + subscribe to realtime changes
@@ -114,13 +115,15 @@ export default function App() {
     priority: (a, b) => { const o = { high: 0, ongoing: 1, waiting: 2, norush: 3 }; return (o[a.priority] ?? 1) - (o[b.priority] ?? 1) || dueOrdOf(a.due) - dueOrdOf(b.due); },
   };
   const visible = tasks.filter(t => !hidden[t.project]);
-  const sorted = [...visible].sort(cmps[sortBy] || cmps.due);
+  const active = visible.filter(t => !t.done);
+  const completed = visible.filter(t => t.done);
+  const sorted = [...active].sort(cmps[sortBy] || cmps.due);
   const colAssign = t => t.priority === 'high' ? 'priority' : t.priority === 'ongoing' ? 'progress' : 'hold';
   const cols = [
     { key: 'priority', label: 'Priority' },
     { key: 'progress', label: 'In Progress' },
     { key: 'hold', label: 'Waiting & Backlog' },
-  ].map(c => ({ ...c, items: visible.filter(t => colAssign(t) === c.key).sort(cmps[sortBy] || cmps.due) }));
+  ].map(c => ({ ...c, items: active.filter(t => colAssign(t) === c.key).sort(cmps[sortBy] || cmps.due) }));
 
   // ---- mutations ----
   function openNew() {
@@ -175,6 +178,15 @@ export default function App() {
     setMode('view');
     if (draftIsNew) setSelected(null);
     setDraftIsNew(false);
+  }
+
+  async function toggleTaskDone(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    const done = !task.done;
+    await supabase.from('tasks').update({ done }).eq('id', id);
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, done } : t));
+    if (done) { setSelected(null); setMode('view'); }
   }
 
   async function deleteTask(id) {
@@ -301,18 +313,43 @@ export default function App() {
         </div>
 
         {/* EMPTY */}
-        {visible.length === 0 && (
+        {active.length === 0 && completed.length === 0 && (
           <div style={{ padding: '48px 0', textAlign: 'center', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: '#777e8c' }}>
             {tasks.length === 0 ? 'No tasks yet — hit + New task.' : 'No tasks — every category is hidden.'}
           </div>
         )}
 
         {/* LIST VIEW */}
-        {view === 'list' && visible.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 11, maxWidth: 560 }}>
-            {sorted.map(t => (
-              <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} cardPrefs={cardPrefs} />
-            ))}
+        {view === 'list' && (
+          <div style={{ maxWidth: 560 }}>
+            {active.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+                {sorted.map(t => (
+                  <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} cardPrefs={cardPrefs} onToggleDone={() => toggleTaskDone(t.id)} />
+                ))}
+              </div>
+            )}
+
+            {/* COMPLETED SECTION */}
+            {completed.length > 0 && (
+              <div style={{ marginTop: active.length > 0 ? 28 : 0 }}>
+                <button
+                  onClick={() => setCompletedOpen(o => !o)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', marginBottom: completedOpen ? 14 : 0 }}
+                >
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#6b7280' }}>
+                    {completedOpen ? '▾' : '▸'} Completed · {completed.length}
+                  </span>
+                </button>
+                {completedOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 11, opacity: 0.6 }}>
+                    {completed.map(t => (
+                      <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} cardPrefs={cardPrefs} onToggleDone={() => toggleTaskDone(t.id)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -327,7 +364,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                   {col.items.map(t => (
-                    <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} kanban cardPrefs={cardPrefs} />
+                    <TaskCard key={t.id} task={t} selected={selected === t.id} snoozeOn={snoozeOn} onClick={() => { setSelected(t.id); setMode('view'); }} kanban cardPrefs={cardPrefs} onToggleDone={() => toggleTaskDone(t.id)} />
                   ))}
                 </div>
               </div>
