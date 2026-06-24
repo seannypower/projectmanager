@@ -14,7 +14,7 @@ Headers: `apikey: <key>`, `Authorization: Bearer <key>`, `Content-Type: applicat
 |---|---|---|
 | id | bigint | auto |
 | title | text | — |
-| project | text | `personal` `work` |
+| project | text | `personal` `work` `music` `video` |
 | priority | text | `high` `ongoing` `waiting` `norush` |
 | due | text | `"Jun 24"` format |
 | est | text | `"3h"` — ignored if subtasks exist |

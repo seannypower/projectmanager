@@ -26,7 +26,9 @@ export const PRI = {
 
 export const PROJ_COLOR = {
   personal: 'oklch(0.58 0.13 45)',
-  work: 'oklch(0.56 0.13 262)',
+  work:     'oklch(0.56 0.13 262)',
+  music:    'oklch(0.44 0.13 240)',
+  video:    'oklch(0.58 0.13 192)',
 };
 
 export const DUE_COLOR = {

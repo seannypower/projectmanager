@@ -27,7 +27,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: [
     description: "Add a task to Sean's dashboard",
     inputSchema: { type: 'object', required: ['title'], properties: {
       title:    { type: 'string' },
-      project:  { type: 'string', enum: ['personal', 'work'], default: 'personal' },
+      project:  { type: 'string', enum: ['personal', 'work', 'music', 'video'], default: 'personal' },
       priority: { type: 'string', enum: ['high', 'ongoing', 'waiting', 'norush'], default: 'ongoing' },
       due:      { type: 'string', description: 'e.g. "Jul 15"' },
       est:      { type: 'string', description: 'e.g. "3h"' },

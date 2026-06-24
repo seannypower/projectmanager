@@ -15,7 +15,7 @@ function move(arr, fromId, toId) {
   return a;
 }
 
-const PROJ_COLOR_MAP = { personal: 'oklch(0.58 0.13 45)', work: 'oklch(0.56 0.13 262)' };
+const PROJ_COLOR_MAP = { personal: 'oklch(0.58 0.13 45)', work: 'oklch(0.56 0.13 262)', music: 'oklch(0.44 0.13 240)', video: 'oklch(0.58 0.13 192)' };
 
 function newSubId() { return `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
 
@@ -253,7 +253,7 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 24, paddingBottom: 20, borderBottom: '1px solid #363c47' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
             <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#777e8c', marginRight: 3 }}>Show</span>
-            {['personal', 'work'].map(k => {
+            {['personal', 'work', 'music', 'video'].map(k => {
               const on = !hidden[k];
               return (
                 <button key={k} onClick={() => setHidden(h => ({ ...h, [k]: !h[k] }))} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, border: `1px solid ${on ? '#474e5b' : '#3a414c'}`, background: on ? '#353b46' : 'transparent', color: on ? '#edebe5' : '#7a818d', padding: '5px 11px', borderRadius: 8, cursor: 'pointer', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, fontWeight: 500, transition: 'all 0.12s' }}>

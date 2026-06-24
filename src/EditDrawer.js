@@ -99,7 +99,7 @@ export function EditDrawer({ draft, isNew, onClose, onSave, onDelete, onSetDraft
         <div style={{ marginBottom: 18 }}>
           <label style={labelStyle}>Project</label>
           <div style={{ display: 'flex', gap: 7 }}>
-            {['personal', 'work'].map(k => (
+            {['personal', 'work', 'music', 'video'].map(k => (
               <SegBtn key={k} label={k} active={draft.project === k} dot={PROJ_COLOR[k]} onClick={() => onSetDraft({ project: k })} />
             ))}
           </div>
