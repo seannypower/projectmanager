@@ -102,6 +102,7 @@ export default function App() {
     duration: (a, b) => { const va = a.subs.length > 0 ? sumHours(a.subs) : (parseFloat(a.est)||999); const vb = b.subs.length > 0 ? sumHours(b.subs) : (parseFloat(b.est)||999); return va - vb; },
     snooze:   (a, b) => b.snooze - a.snooze || dueOrdOf(a.due) - dueOrdOf(b.due),
     project:  (a, b) => (a.project < b.project ? -1 : a.project > b.project ? 1 : dueOrdOf(a.due) - dueOrdOf(b.due)),
+    priority: (a, b) => { const o = { high: 0, ongoing: 1, waiting: 2, norush: 3 }; return (o[a.priority] ?? 1) - (o[b.priority] ?? 1) || dueOrdOf(a.due) - dueOrdOf(b.due); },
   };
   const visible = tasks.filter(t => !hidden[t.project]);
   const sorted = [...visible].sort(cmps[sortBy] || cmps.due);
@@ -253,6 +254,7 @@ export default function App() {
               <option value="duration">Duration</option>
               <option value="snooze">Most snoozed</option>
               <option value="project">Project</option>
+              <option value="priority">Priority</option>
             </select>
             <div style={{ width: 1, height: 20, background: '#3a414c' }} />
             {/* View menu */}
