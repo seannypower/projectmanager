@@ -17,8 +17,7 @@ function move(arr, fromId, toId) {
 
 const PROJ_COLOR_MAP = { personal: 'oklch(0.58 0.13 45)', work: 'oklch(0.56 0.13 262)' };
 
-let _nextSubId = 1000;
-function newSubId() { return 'sub_' + (_nextSubId++); }
+function newSubId() { return `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`; }
 
 // Write a task + its subtasks to Supabase (for existing tasks only)
 async function syncTask(task) {
