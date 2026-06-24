@@ -84,8 +84,8 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
       return { content: [{ type: 'text', text: `Task ${id} updated.` }] };
     }
     if (name === 'delete_task') {
-      await sb('DELETE', `/tasks?id=eq.${a.id}`);
-      return { content: [{ type: 'text', text: `Task ${a.id} deleted.` }] };
+      await sb('PATCH', `/tasks?id=eq.${a.id}`, { deleted_at: new Date().toISOString() });
+      return { content: [{ type: 'text', text: `Task ${a.id} soft-deleted (recoverable from Supabase).` }] };
     }
     if (name === 'add_subtask') {
       const existing = await sb('GET', `/subtasks?task_id=eq.${a.task_id}&order=position`);
