@@ -4,6 +4,7 @@ import { TaskCard } from './TaskCard';
 import { DetailDrawer } from './DetailDrawer';
 import { EditDrawer } from './EditDrawer';
 import { dueOrdOf, sumHours } from './data';
+import { QuickTasks } from './QuickTasks';
 
 function move(arr, fromId, toId) {
   const a = arr.slice();
@@ -320,7 +321,8 @@ export default function App() {
 
         {/* LIST VIEW */}
         {view === 'list' && (
-          <div style={{ maxWidth: 560 }}>
+          <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
+          <div style={{ maxWidth: 560, flex: 1, minWidth: 0 }}>
             {active.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                 {sorted.map(t => (
@@ -349,6 +351,11 @@ export default function App() {
                 )}
               </div>
             )}
+          </div>
+          {/* QUICK TASKS — desktop only */}
+          <div style={{ display: 'none' }} className="quick-tasks-panel">
+            <QuickTasks tasks={active} onSelect={id => { setSelected(id); setMode('view'); }} />
+          </div>
           </div>
         )}
 
