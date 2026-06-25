@@ -32,7 +32,7 @@ function SubEditRow({ sub, onSetName, onSetDur, onSetNotes, onCyclePri, onToggle
         </button>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: '#2b3038', border: '1px solid #474e5b', borderRadius: 6, padding: '5px 6px', flex: 'none' }}>
           <input
-            value={parseFloat(sub.dur) || ''}
+            value={(sub.dur || '').replace(/[a-zA-Z]/g, '')}
             onChange={e => onSetDur(e.target.value.replace(/[^0-9.]/g, ''))}
             placeholder="2"
             style={{ width: 20, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, textAlign: 'center', outline: 'none' }}
@@ -130,7 +130,7 @@ export function EditDrawer({ draft, isNew, onClose, onSave, onDelete, onSetDraft
               <div style={{ background: '#2b3038', border: '1px dashed #474e5b', borderRadius: 8, padding: '9px 11px', color: '#868d99', fontFamily: "'IBM Plex Mono',monospace", fontSize: 12 }}>auto · {sum} hr</div>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', background: '#383e49', border: '1px solid #474e5b', borderRadius: 8, padding: '9px 11px', gap: 6 }}>
-                <input value={parseFloat(draft.est) || ''} onChange={e => onSetDraft({ est: e.target.value.replace(/[^0-9.]/g, '') })} placeholder="3" style={{ flex: 1, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, outline: 'none' }} />
+                <input value={draft.est.replace(/[a-zA-Z]/g, '')} onChange={e => onSetDraft({ est: e.target.value.replace(/[^0-9.]/g, '') })} placeholder="3" style={{ flex: 1, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, outline: 'none' }} />
                 <span style={{ color: '#6b7280', fontFamily: "'IBM Plex Mono',monospace", fontSize: 13 }}>hr</span>
               </div>
             )}

@@ -72,7 +72,7 @@ function SubRow({ sub, taskPriColor, isUserSort, draggingId, onToggle, onSetName
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, background: '#2b3038', border: '1px solid #5b6373', borderRadius: 6, padding: '3px 8px', flex: 'none' }}>
             <input
               autoFocus
-              defaultValue={parseFloat(sub.dur) || ''}
+              defaultValue={(sub.dur || '').replace(/[a-zA-Z]/g, '')}
               onChange={e => onSetDur(e.target.value.replace(/[^0-9.]/g, ''))}
               onBlur={() => setEditingDur(false)}
               onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') setEditingDur(false); }}
