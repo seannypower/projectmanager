@@ -107,11 +107,14 @@ function SubRow({ sub, taskPriColor, isUserSort, draggingId, onToggle, onSetName
   );
 }
 
-export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub, onSetSubName, onSetSubPri, onSetSubDue, onSetSubDur, onSetSubNotes, onAddSub }) {
+export function DetailDrawer({ task, onClose, onEdit, onPatchTask, onToggleSub, onReorderSub, onSetSubName, onSetSubPri, onSetSubDue, onSetSubDur, onSetSubNotes, onAddSub }) {
   const [subSortBy, setSubSortBy] = useState('user');
   const [draggingId, setDraggingId] = useState(null);
   const [addingNew, setAddingNew] = useState(false);
   const [newSubName, setNewSubName] = useState('');
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [editingDue, setEditingDue] = useState(false);
   const dragRef = useRef(null);
   const lastDragOver = useRef(null);
 
@@ -126,6 +129,9 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
   const subPct = total ? Math.round((done / total) * 100) : 0;
   const snoozeBg = task.snooze >= 3 ? 'oklch(0.60 0.14 68)' : 'oklch(0.50 0.008 255)';
 
+  const PROJ_LIST = ['personal', 'work', 'music', 'video'];
+  const patch = (obj) => onPatchTask(obj);
+
   const subSortCmps = {
     due:      (a, b) => dueOrdOf(a.due || '') - dueOrdOf(b.due || ''),
     duration: (a, b) => (parseFloat(b.dur) || 0) - (parseFloat(a.dur) || 0),
@@ -139,22 +145,72 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
       {/* Header */}
       <div style={{ padding: '24px 28px 22px', borderBottom: '1px solid #3a414c' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: p.color }}>
+          {/* Priority cycle */}
+          <button
+            onClick={() => { const i = PRIORDER.indexOf(task.priority); patch({ priority: PRIORDER[(i + 1) % 4] }); }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: p.color, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+            title="Click to cycle priority"
+          >
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color }} />
             {p.label}
-          </span>
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button onClick={onEdit} style={{ border: '1px solid #474e5b', background: 'transparent', color: '#cdd2da', cursor: 'pointer', padding: '5px 13px', borderRadius: 7, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, fontWeight: 500 }}>Edit</button>
             <button onClick={onClose} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 22, lineHeight: 1, color: '#868d99', padding: '2px 6px' }}>×</button>
           </div>
         </div>
-        <div style={{ fontSize: 21, fontWeight: 600, color: '#edebe5', marginTop: 12, letterSpacing: '-0.018em', lineHeight: 1.25 }}>{task.title}</div>
-        {task.notes && task.notes.trim() && (
-          <div style={{ fontSize: 13.5, color: '#9aa1ad', marginTop: 8, lineHeight: 1.5 }}>{task.notes}</div>
+
+        {/* Title */}
+        {editingTitle ? (
+          <input
+            autoFocus
+            defaultValue={task.title}
+            onBlur={e => { patch({ title: e.target.value }); setEditingTitle(false); }}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+            style={{ width: '100%', marginTop: 12, fontSize: 21, fontWeight: 600, color: '#edebe5', background: '#383e49', border: '1px solid #5b6373', borderRadius: 8, padding: '8px 10px', fontFamily: "'Schibsted Grotesk',sans-serif", letterSpacing: '-0.018em', outline: 'none' }}
+          />
+        ) : (
+          <div onClick={() => setEditingTitle(true)} style={{ fontSize: 21, fontWeight: 600, color: '#edebe5', marginTop: 12, letterSpacing: '-0.018em', lineHeight: 1.25, cursor: 'text' }}>{task.title}</div>
         )}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 16 }}>
-          <Chip bg={PROJ_COLOR[task.project] || PROJ_COLOR.personal}>{task.project}</Chip>
-          <Chip bg={DUE_COLOR[dueState]}>{dueText}</Chip>
+
+        {/* Notes */}
+        {editingNotes ? (
+          <textarea
+            autoFocus
+            defaultValue={task.notes || ''}
+            onBlur={e => { patch({ notes: e.target.value }); setEditingNotes(false); }}
+            onKeyDown={e => { if (e.key === 'Escape') e.target.blur(); }}
+            style={{ width: '100%', marginTop: 8, fontSize: 13.5, color: '#9aa1ad', background: '#383e49', border: '1px solid #5b6373', borderRadius: 8, padding: '7px 10px', fontFamily: "'Schibsted Grotesk',sans-serif", lineHeight: 1.5, resize: 'none', outline: 'none', minHeight: 52 }}
+          />
+        ) : (
+          <div onClick={() => setEditingNotes(true)} style={{ fontSize: 13.5, color: task.notes?.trim() ? '#9aa1ad' : '#4d5462', marginTop: 8, lineHeight: 1.5, cursor: 'text', minHeight: 20 }}>
+            {task.notes?.trim() || 'add a note…'}
+          </div>
+        )}
+
+        {/* Chips */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+          {/* Project — cycle on click */}
+          <span
+            onClick={() => { const i = PROJ_LIST.indexOf(task.project); patch({ project: PROJ_LIST[(i + 1) % PROJ_LIST.length] }); }}
+            style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 6, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, fontWeight: 500, color: '#fff', background: PROJ_COLOR[task.project] || PROJ_COLOR.personal, cursor: 'pointer' }}
+            title="Click to cycle project"
+          >{task.project}</span>
+
+          {/* Due date — click to edit */}
+          {editingDue ? (
+            <input
+              autoFocus
+              defaultValue={task.due || ''}
+              onBlur={e => { patch({ due: e.target.value }); setEditingDue(false); }}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === 'Escape') e.target.blur(); }}
+              placeholder="Jun 24"
+              style={{ width: 80, background: '#383e49', border: '1px solid #5b6373', borderRadius: 6, color: '#edebe5', fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, padding: '3px 8px', outline: 'none' }}
+            />
+          ) : (
+            <span onClick={() => setEditingDue(true)} style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 6, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, fontWeight: 500, color: '#fff', background: DUE_COLOR[dueState], cursor: 'text' }}>{dueText}</span>
+          )}
+
           {durChip && <Chip bg={DUR_BRICK}>{durChip}</Chip>}
           {task.snooze > 0 && <Chip bg={snoozeBg}>☾ {task.snooze} snoozed</Chip>}
         </div>

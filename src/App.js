@@ -397,6 +397,7 @@ export default function App() {
           task={selectedTask}
           onClose={closeDrawer}
           onEdit={() => openEdit(selected)}
+          onPatchTask={patch => patchAndSync(selected, t => ({ ...t, ...patch }))}
           onToggleSub={subId => patchSub(selected, subId, { done: !selectedTask.subs.find(s => s.id === subId)?.done })}
           onReorderSub={(fromId, toId) => patchAndSync(selected, t => ({ ...t, subs: move(t.subs, fromId, toId) }))}
           onSetSubName={(subId, v) => patchSub(selected, subId, { name: v })}
