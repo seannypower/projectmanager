@@ -5,13 +5,16 @@ export function QuickTasks({ tasks, onSelect }) {
   const [open, setOpen] = useState(true);
   const [picks, setPicks] = useState(null); // null = use initial
 
-  // Collect all incomplete subtasks from active tasks
+  // Collect short incomplete subtasks that are unblocked (all prior subs in the list are done)
   const candidates = useMemo(() => {
     const result = [];
     for (const task of tasks) {
       if (task.done) continue;
-      for (const sub of task.subs) {
+      for (let i = 0; i < task.subs.length; i++) {
+        const sub = task.subs[i];
         if (sub.done) continue;
+        const priorAllDone = task.subs.slice(0, i).every(s => s.done);
+        if (!priorAllDone) continue;
         const dur = parseFloat(sub.dur) || 0;
         if (dur > 0 && dur <= 2) result.push({ sub, task });
       }
