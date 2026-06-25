@@ -107,9 +107,11 @@ function SubRow({ sub, taskPriColor, isUserSort, draggingId, onToggle, onSetName
   );
 }
 
-export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub, onSetSubName, onSetSubPri, onSetSubDue, onSetSubDur, onSetSubNotes }) {
+export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub, onSetSubName, onSetSubPri, onSetSubDue, onSetSubDur, onSetSubNotes, onAddSub }) {
   const [subSortBy, setSubSortBy] = useState('user');
   const [draggingId, setDraggingId] = useState(null);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newSubName, setNewSubName] = useState('');
   const dragRef = useRef(null);
   const lastDragOver = useRef(null);
 
@@ -163,7 +165,10 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
         {total > 0 ? (
           <>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#868d99' }}>Subtasks</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#868d99' }}>Subtasks</span>
+                <button onClick={() => { setAddingNew(true); setNewSubName(''); }} style={{ border: '1px solid #474e5b', background: 'transparent', color: '#9aa1ad', cursor: 'pointer', padding: '3px 9px', borderRadius: 6, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, transition: 'all 0.12s' }}>+ Add</button>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#777e8c' }}>Sort</span>
                 <select value={subSortBy} onChange={e => setSubSortBy(e.target.value)} style={{ border: '1px solid #474e5b', background: '#383e49', borderRadius: 6, padding: '4px 8px', fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: '#edebe5', cursor: 'pointer' }}>
@@ -175,6 +180,7 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
                 <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: '#777e8c' }}>{done}/{total} · {sumH} hr</span>
               </div>
             </div>
+
             <div style={{ height: 6, borderRadius: 4, background: '#20242b', overflow: 'hidden', marginBottom: 8 }}>
               <div style={{ height: '100%', width: `${subPct}%`, background: p.color, transition: 'width 0.25s' }} />
             </div>
@@ -210,10 +216,46 @@ export function DetailDrawer({ task, onClose, onEdit, onToggleSub, onReorderSub,
                 />
               ))}
             </div>
+
+            {addingNew && (
+              <div style={{ marginTop: 8, background: '#383e49', border: '1px solid #5b6373', borderRadius: 10, padding: '11px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 19, height: 19, borderRadius: 6, border: '1.5px solid #5a616e', background: 'transparent', flex: 'none' }} />
+                <input
+                  autoFocus
+                  value={newSubName}
+                  onChange={e => setNewSubName(e.target.value)}
+                  placeholder="Subtask name…"
+                  onBlur={() => { if (newSubName.trim()) onAddSub(newSubName.trim()); setAddingNew(false); setNewSubName(''); }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && newSubName.trim()) { onAddSub(newSubName.trim()); setAddingNew(false); setNewSubName(''); }
+                    if (e.key === 'Escape') { setAddingNew(false); setNewSubName(''); }
+                  }}
+                  style={{ flex: 1, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'Schibsted Grotesk',sans-serif", fontSize: 14, outline: 'none' }}
+                />
+              </div>
+            )}
           </>
         ) : (
           <div style={{ padding: '14px 0', fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: '#777e8c', lineHeight: 1.6 }}>
-            No subtasks on this one.<br />Hit Edit to add some.
+            <div style={{ marginBottom: 10 }}>No subtasks on this one.</div>
+            <button onClick={() => { setAddingNew(true); setNewSubName(''); }} style={{ border: '1px dashed #474e5b', background: 'transparent', color: '#9aa1ad', cursor: 'pointer', padding: '7px 14px', borderRadius: 8, fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, transition: 'all 0.12s' }}>+ Add subtask</button>
+            {addingNew && (
+              <div style={{ marginTop: 8, background: '#383e49', border: '1px solid #5b6373', borderRadius: 10, padding: '11px 12px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 19, height: 19, borderRadius: 6, border: '1.5px solid #5a616e', background: 'transparent', flex: 'none' }} />
+                <input
+                  autoFocus
+                  value={newSubName}
+                  onChange={e => setNewSubName(e.target.value)}
+                  placeholder="Subtask name…"
+                  onBlur={() => { if (newSubName.trim()) onAddSub(newSubName.trim()); setAddingNew(false); setNewSubName(''); }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && newSubName.trim()) { onAddSub(newSubName.trim()); setAddingNew(false); setNewSubName(''); }
+                    if (e.key === 'Escape') { setAddingNew(false); setNewSubName(''); }
+                  }}
+                  style={{ flex: 1, background: 'transparent', border: 'none', color: '#edebe5', fontFamily: "'Schibsted Grotesk',sans-serif", fontSize: 14, outline: 'none' }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

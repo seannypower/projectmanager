@@ -215,6 +215,15 @@ export default function App() {
     patchAndSync(taskId, t => ({ ...t, subs: t.subs.map(s => s.id === subId ? { ...s, ...patch } : s) }));
   }
 
+  async function addSubInline(taskId, name) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    const newSub = { id: newSubId(), task_id: taskId, name, pri: 'ongoing', dur: '', due: '', done: false, notes: '', position: task.subs.length };
+    const { error } = await supabase.from('subtasks').insert(newSub);
+    if (error) { console.error('addSubInline:', error); return; }
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, subs: [...t.subs, { id: newSub.id, name, pri: 'ongoing', dur: '', due: '', done: false, notes: '' }] } : t));
+  }
+
   const selectedTask = selected != null ? tasks.find(t => t.id === selected) : null;
   const viewOpen = mode === 'view' && selectedTask != null;
   const editOpen = mode === 'edit' && draft != null;
@@ -395,6 +404,7 @@ export default function App() {
           onSetSubDue={(subId, v) => patchSub(selected, subId, { due: v })}
           onSetSubDur={(subId, v) => patchSub(selected, subId, { dur: v })}
           onSetSubNotes={(subId, v) => patchSub(selected, subId, { notes: v })}
+          onAddSub={name => addSubInline(selected, name)}
         />
       )}
 
